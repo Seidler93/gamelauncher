@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { open } from "@tauri-apps/api/dialog";
 import { dirname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
+import LibraryNav from "./components/nav/libraryNav";
 
 export default function App() {
   const [exe, setExe] = useState("");
   const [rom, setRom] = useState("");
+  const [platformOptions, setPlatformOptions] = useState(["all", "ps2", "ps3", "steam"]);
+  const [currentlyDisplayed, setCurrentlyDisplayed] = useState('all');
+
+  useEffect(() => {
+    console.log(currentlyDisplayed);
+  }, [currentlyDisplayed]);
 
   async function pickExe() {
     const res = await open({ multiple: false, directory: false });
@@ -30,7 +37,8 @@ export default function App() {
   }
 
   return (
-    <div style={{ padding: 16 }}>
+    <div>
+      <LibraryNav currentlyDisplayed={currentlyDisplayed} platformOptions={platformOptions} setCurrentlyDisplayed={setCurrentlyDisplayed} />
       <h1>Game Launcher (JS)</h1>
       <div style={{ display: "grid", gap: 8, maxWidth: 640 }}>
         <div>
