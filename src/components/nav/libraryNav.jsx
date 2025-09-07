@@ -5,12 +5,19 @@ export default function LibraryNav({ currentlyDisplayed, platformOptions, setCur
 
   return (
     <nav>
-      <span>Currently showing: {currentlyDisplayed}</span>
-      <ul>
+      <span>Logo</span>
+      <div className="pills">
         {platformOptions.map((p) => (
-          <li key={p} onClick={() => setCurrentlyDisplayed(p)}>{p}</li>
+          <button
+            key={p}
+            className={p === currentlyDisplayed ? "active" : ""}
+            onClick={() => setCurrentlyDisplayed(p)}
+          >
+            {p}
+          </button>
         ))}
-      </ul>
+      </div>
+      <button>Settings button</button>
     </nav>
   )
 }

@@ -4,6 +4,7 @@ import { dirname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import LibraryNav from "./components/nav/libraryNav";
+import GameCard from "./components/gameCard";
 
 export default function App() {
   const [exe, setExe] = useState("");
@@ -14,6 +15,14 @@ export default function App() {
   useEffect(() => {
     console.log(currentlyDisplayed);
   }, [currentlyDisplayed]);
+
+  // have temporary games that i change what is in view and what is hidden
+
+  // button to add game folder
+
+  // button to add emulator/steam app path
+
+  // folders for launch logic
 
   async function pickExe() {
     const res = await open({ multiple: false, directory: false });
@@ -39,7 +48,7 @@ export default function App() {
   return (
     <div>
       <LibraryNav currentlyDisplayed={currentlyDisplayed} platformOptions={platformOptions} setCurrentlyDisplayed={setCurrentlyDisplayed} />
-      <h1>Game Launcher (JS)</h1>
+      {/* <h1>Game Launcher (JS)</h1>
       <div style={{ display: "grid", gap: 8, maxWidth: 640 }}>
         <div>
           <b>Emulator EXE:</b><br />
@@ -54,6 +63,9 @@ export default function App() {
         </div>
 
         <button onClick={launch} style={{ padding: 10, fontWeight: 700 }}>Launch</button>
+      </div> */}
+      <div className="library-container">
+
       </div>
     </div>
   );
