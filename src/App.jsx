@@ -5,16 +5,26 @@ import { exists } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import LibraryNav from "./components/nav/libraryNav";
 import GameCard from "./components/gameCard";
+import { sampleGames } from "./tempHelpers";
+import AddGamesModal from "./components/addGamesModal";
+import { useAppContext } from "./context/AppContext";
 
 export default function App() {
   const [exe, setExe] = useState("");
   const [rom, setRom] = useState("");
-  const [platformOptions, setPlatformOptions] = useState(["all", "ps2", "ps3", "steam"]);
+  const [platformOptions, setPlatformOptions] = useState(["all", "ps2", "ps3", "steam", "consoles"]);
   const [currentlyDisplayed, setCurrentlyDisplayed] = useState('all');
+  const [addGamesModal, setaddGamesModal] = useState(false);
+  const { games, setGames } = useAppContext();
+  
 
   useEffect(() => {
-    console.log(currentlyDisplayed);
-  }, [currentlyDisplayed]);
+    if (games.length < 1 ) {
+      setGames(sampleGames);
+    }
+    
+    
+  }, [games]);
 
   // have temporary games that i change what is in view and what is hidden
 
@@ -47,7 +57,7 @@ export default function App() {
 
   return (
     <div>
-      <LibraryNav currentlyDisplayed={currentlyDisplayed} platformOptions={platformOptions} setCurrentlyDisplayed={setCurrentlyDisplayed} />
+      <LibraryNav currentlyDisplayed={currentlyDisplayed} platformOptions={platformOptions} setCurrentlyDisplayed={setCurrentlyDisplayed}/>
       {/* <h1>Game Launcher (JS)</h1>
       <div style={{ display: "grid", gap: 8, maxWidth: 640 }}>
         <div>
@@ -65,8 +75,11 @@ export default function App() {
         <button onClick={launch} style={{ padding: 10, fontWeight: 700 }}>Launch</button>
       </div> */}
       <div className="library-container">
-
+        {games.map((game) => (
+          <GameCard key={game.id} game={game}/>
+        ))}
       </div>
+      <AddGamesModal/>
     </div>
   );
 }

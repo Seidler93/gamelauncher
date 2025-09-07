@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import './nav/libraryNav.css'
+import './gameCard.css'
 
 export default function GameCard({ game }) {
 
   return (
-    <div>
-      <img src="" alt="" />
-      <h2>Game title</h2>
+    <div key={game.id} className='game-card'>
+      <img src="/ps2-game-cover-default.png" alt="" />
+      {/* <h2>{game.title}</h2> */}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './LibraryNav.css'
+import SettingsBtn from '../settingsBtn'
 
 export default function LibraryNav({ currentlyDisplayed, platformOptions, setCurrentlyDisplayed }) {
 
@@ -17,7 +18,7 @@ export default function LibraryNav({ currentlyDisplayed, platformOptions, setCur
           </button>
         ))}
       </div>
-      <button>Settings button</button>
+      <SettingsBtn/>
     </nav>
   )
 }
