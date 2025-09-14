@@ -11,7 +11,7 @@ tauri-build = { version = "1", features = [] }
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-tauri = { version = "1", features = [ "fs-read-dir", "shell-open", "fs-exists", "fs-read-file", "os-all", "dialog-confirm", "dialog-ask", "dialog-open", "dialog-message", "path-all"] }
+tauri = { version = "1", features = [ "shell-all", "fs-read-dir", "fs-exists", "fs-read-file", "os-all", "dialog-confirm", "dialog-ask", "dialog-open", "dialog-message", "path-all"] }
 
 [features]
 default = ["custom-protocol"]

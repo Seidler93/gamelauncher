@@ -48,10 +48,10 @@
         "all": true
       },
       "shell": {
+        "all": true,
         "execute": true,
-        "scope": [
-          "**"
-        ]
+        "sidecar": true,
+        "open": true 
       }
     }
   }

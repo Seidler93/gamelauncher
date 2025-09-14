@@ -2,12 +2,17 @@ import { useState } from 'react'
 import './gameCard.css'
 import { launchPCSX2 } from './utils/launchers'
 import { useAppContext } from '../context/AppContext'
+import { launchRom } from './utils/launchers'
 
 export default function GameCard({ game }) {
   const { games, setGames, emulators } = useAppContext();
 
+  // const launchGame = () => {
+  //   launchPCSX2(game.emulatorPath, game.romPath);
+  // }
+
   const launchGame = () => {
-    launchPCSX2(game.emulatorPath, game.romPath);
+    launchRom(game.emulatorPath, game.romPath);
   }
   
   return (

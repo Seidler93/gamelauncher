@@ -24,3 +24,25 @@ export async function launchPCSX2(pcsx2Path, romPath, args = []) {
 //       return [];
 //   }
 // }
+
+import { invoke } from "@tauri-apps/api/tauri";
+import { dirname } from "@tauri-apps/api/path";
+
+export async function launchRom(emulatorPath, gamePath) {
+  const exe = emulatorPath;
+  const rom = gamePath;
+
+  const args = [rom]; // or your emulator-specific format
+  const cwd = await dirname(exe);
+
+  console.log("Attempting to run:", exe);
+
+
+  await invoke("launch_process", {
+    spec: {
+      exe,
+      args,
+      cwd
+    }
+  });
+}

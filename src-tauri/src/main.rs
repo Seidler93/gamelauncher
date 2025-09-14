@@ -8,7 +8,7 @@ use tauri::Manager;
 async fn launch_process(spec: LaunchSpec) -> Result<(), String> {
     Command::new(spec.exe)
         .args(spec.args)
-        .current_dir(spec.cwd)
+        .current_dir(spec.cwd.into())
         .spawn()
         .map_err(|e| e.to_string())?;
     Ok(())
