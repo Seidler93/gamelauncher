@@ -9,6 +9,7 @@ import { sampleGames } from "./tempHelpers";
 import AddGamesModal from "./components/addGamesModal";
 import AddEmulatorModal from "./components/addEmulatorModal";
 import { useAppContext } from "./context/AppContext";
+import { readData } from "./components/utils/storageManager";
 
 export default function App() {
   const [exe, setExe] = useState("");
@@ -21,7 +22,7 @@ export default function App() {
 
   useEffect(() => {
     if (games.length < 1 ) {
-      setGames(sampleGames);
+      setGames(readData());
     }
     console.log(emulators);
     
@@ -75,7 +76,7 @@ export default function App() {
         <button onClick={launch} style={{ padding: 10, fontWeight: 700 }}>Launch</button>
       </div> */}
       <div className="library-container">
-        {games.map((game) => (
+        {games && games.map((game) => (
           <GameCard key={game.id} game={game}/>
         ))}
       </div>
