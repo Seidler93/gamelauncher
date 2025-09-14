@@ -4,6 +4,7 @@ import { useAppContext } from "../context/AppContext";
 import { open } from "@tauri-apps/api/dialog";
 import { useState } from "react";
 import { scanForGames } from "./utils/scanners";
+import { addGame } from "./utils/storageManager";
 
 export default function AddGamesModal() {
   const { isAddGamesModalOpen, openAddGamesModal, closeAddGamesModal, games, setGames} = useAppContext();
@@ -19,9 +20,17 @@ export default function AddGamesModal() {
 
     if (folder) {
       const newGames = await scanForGames(selectedEmulator, folder) || [];
-      
+
+      // Update state immediately
       setGames([...games, ...newGames]);
       console.log("All scanned games:", newGames);
+
+      // Loop through and add each game to persistent storage
+      for (const game of newGames) {
+        await addGame(game);
+      }
+
+      closeAddGamesModal();
     }
   };
 

@@ -1,55 +1,70 @@
-import { createContext, useContext, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
+import { readData } from "../components/utils/storageManager";
 
 const AppContext = createContext();
 export const useAppContext = () => useContext(AppContext);
 
 export function AppProvider({ children }) {
-  // 📦 Games modal State
-  const [isAddGamesModalOpen, setIsAddGamesModalOpen] = useState(false);
-  const openAddGamesModal = () => setIsAddGamesModalOpen(true);
-  const closeAddGamesModal = () => setIsAddGamesModalOpen(false);
-
-  // 📦 Emulator modal State
-  const [isAddEmulatorModalOpen, setIsAddEmulatorModalOpen] = useState(false);
-  const openAddEmulatorModal = () => setIsAddEmulatorModalOpen(true);
-  const closeAddEmulatorModal = () => setIsAddEmulatorModalOpen(false);
-
-  // 🕹 Game Library
+  // 🔁 Async load state
   const [games, setGames] = useState([]);
-  const addGame = (game) => setGames(prev => [...prev, game]);
+  const [emulators, setEmulators] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 📦 Modal state
+  const [isAddGamesModalOpen, setIsAddGamesModalOpen] = useState(false);
+  const [isAddEmulatorModalOpen, setIsAddEmulatorModalOpen] = useState(false);
 
   // 🎨 Theme
   const [theme, setTheme] = useState("light");
   const toggleTheme = () => setTheme(t => (t === "light" ? "dark" : "light"));
 
-  // Emulators
-  const [emulators, setEmulators] = useState([]);
+  const addGame = (game) => setGames(prev => [...prev, game]);
+
+  // 🔄 Load data on mount
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await readData();
+        setGames(data.games || []);
+        setEmulators(data.emulators || []);
+      } catch (err) {
+        console.error("Failed to load data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
 
   return (
     <AppContext.Provider
       value={{
+        // loading state
+        loading,
+
         // games modal
         isAddGamesModalOpen,
-        openAddGamesModal,
-        closeAddGamesModal,
+        openAddGamesModal: () => setIsAddGamesModalOpen(true),
+        closeAddGamesModal: () => setIsAddGamesModalOpen(false),
 
         // emulator modal
         isAddEmulatorModalOpen,
-        openAddEmulatorModal,
-        closeAddEmulatorModal,
+        openAddEmulatorModal: () => setIsAddEmulatorModalOpen(true),
+        closeAddEmulatorModal: () => setIsAddEmulatorModalOpen(false),
 
         // games
         games,
         setGames,
         addGame,
 
-        // theme
-        theme,
-        toggleTheme,
-
         // emulators
         emulators,
-        setEmulators
+        setEmulators,
+
+        // theme
+        theme,
+        toggleTheme
       }}
     >
       {children}

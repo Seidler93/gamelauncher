@@ -5,11 +5,12 @@ import { open } from "@tauri-apps/api/dialog";
 import { useState } from "react";
 import { scanForGames } from "./utils/scanners";
 import { platform } from "@tauri-apps/api/os";
+import { addEmulator } from "./utils/storageManager";
 
 export default function AddEmulatorModal() {
   const { isAddEmulatorModalOpen, openAddGamesModal, closeAddEmulatorModal, games, setGames, emulators, setEmulators } = useAppContext();
   const [selectedEmulator, setSelectedEmulator] = useState("");
-  const [emulatorName, setEmulatorname] = useState("");
+  const [emulatorName, setEmulatorName] = useState("");
 
   const emulatorNames = ["PCSX2", "RPCS3", "Dolphin", "Custom"];
 
@@ -47,21 +48,23 @@ export default function AddEmulatorModal() {
       // 1. Save new emulator
       setEmulators((prev) => [...prev, newEmulator]);
 
-      // 2. Update games that match the platform
-      setGames((prevGames) =>
-        prevGames.map((game) =>
-          game.platform === "ps2"
-            ? { ...game, emulatorPath: selectedPath }
-            : game
-        )
-      );
-    }
-  };
+      await addEmulator(newEmulator);
 
+      // // 2. Update games that match the platform
+      // setGames((prevGames) =>
+      //   prevGames.map((game) =>
+      //     game.platform === "ps2"
+      //       ? { ...game, emulatorPath: selectedPath }
+      //       : game
+      //   )
+      // );
+    }
+    closeAddEmulatorModal();
+  };
 
   const handleChange = (e) => {
     const value = e.target.value;
-    setSelectedEmulator(value);
+    setEmulatorName(value);
   };
 
   return (

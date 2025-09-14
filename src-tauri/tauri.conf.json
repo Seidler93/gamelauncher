@@ -36,6 +36,8 @@
       "fs": {
         "readDir": true,
         "readFile": true,
+        "writeFile": true,
+        "createDir": true,
         "exists": true,
         "scope": [
           "**"

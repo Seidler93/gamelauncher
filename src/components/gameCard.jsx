@@ -1,22 +1,19 @@
 import { useState } from 'react'
 import './gameCard.css'
-import { launchPCSX2 } from './utils/launchers'
+import { launchGame } from './utils/launchers'
 import { useAppContext } from '../context/AppContext'
 import { launchRom } from './utils/launchers'
 
 export default function GameCard({ game }) {
   const { games, setGames, emulators } = useAppContext();
 
-  // const launchGame = () => {
-  //   launchPCSX2(game.emulatorPath, game.romPath);
-  // }
-
-  const launchGame = () => {
-    launchRom(game.emulatorPath, game.romPath);
-  }
+  const findEmuPath = () => {
+    const emu = emulators.find(e => e.platform === game.platform);    
+    return emu.path;
+  }  
   
   return (
-    <div key={game.id} className='game-card' onClick={() => launchGame()}>
+    <div key={game.id} className='game-card' onClick={() => launchGame(findEmuPath(), game)}>
       <img src="/ps2-game-cover-default.png" alt="" />
       {/* <h2>{game.title}</h2> */}
     </div>

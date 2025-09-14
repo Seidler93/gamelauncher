@@ -14,19 +14,19 @@ import { readData } from "./components/utils/storageManager";
 export default function App() {
   const [exe, setExe] = useState("");
   const [rom, setRom] = useState("");
-  const [platformOptions, setPlatformOptions] = useState(["all", "ps2", "ps3", "steam", "consoles"]);
+  const [platformOptions, setPlatformOptions] = useState(["All", "PS2", "PS3", "Steam", "Launchers"]);
   const [currentlyDisplayed, setCurrentlyDisplayed] = useState('all');
   const [addGamesModal, setaddGamesModal] = useState(false);
   const { games, setGames, emulators } = useAppContext();
   
 
-  useEffect(() => {
-    if (games.length < 1 ) {
-      setGames(readData());
-    }
-    console.log(emulators);
+  // useEffect(() => {
+  //   if (games.length < 1 ) {
+  //     setGames(readData());
+  //   }
+  //   console.log(emulators);
     
-  }, [games, emulators]);
+  // }, [games, emulators]);
 
   // have temporary games that i change what is in view and what is hidden
 
@@ -59,26 +59,26 @@ export default function App() {
   return (
     <div>
       <LibraryNav currentlyDisplayed={currentlyDisplayed} platformOptions={platformOptions} setCurrentlyDisplayed={setCurrentlyDisplayed}/>
-      {/* <h1>Game Launcher (JS)</h1>
-      <div style={{ display: "grid", gap: 8, maxWidth: 640 }}>
-        <div>
-          <b>Emulator EXE:</b><br />
-          <input value={exe} onChange={e => setExe(e.target.value)} style={{ width: "100%" }} placeholder="C:\\path\\to\\emulator.exe" />
-          <button onClick={pickExe} style={{ marginTop: 6 }}>Browse…</button>
-        </div>
-
-        <div>
-          <b>ROM / Game (optional):</b><br />
-          <input value={rom} onChange={e => setRom(e.target.value)} style={{ width: "100%" }} placeholder="C:\\path\\to\\game.bin or ...\\EBOOT.BIN" />
-          <button onClick={pickRom} style={{ marginTop: 6 }}>Browse…</button>
-        </div>
-
-        <button onClick={launch} style={{ padding: 10, fontWeight: 700 }}>Launch</button>
-      </div> */}
       <div className="library-container">
-        {games && games.map((game) => (
-          <GameCard key={game.id} game={game}/>
-        ))}
+        {Array.isArray(games) && games.length > 0 ? (
+          games.map((game) => (
+            <GameCard key={game.id} game={game} />
+          ))
+        ) : (
+          <p>No games found. <button >Scan for Games</button></p>
+        )}
+        <h2>Stored Emulators</h2>
+        {Array.isArray(emulators) && emulators.length > 0 ? (
+          <ul>
+            {emulators.map((emu) => (
+              <li key={emu.id || emu.name}>
+                <strong>{emu.name}</strong> — <code>{emu.exe}</code>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No emulators saved yet.</p>
+        )}
       </div>
       <AddEmulatorModal/>
       <AddGamesModal/>

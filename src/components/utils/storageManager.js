@@ -1,19 +1,35 @@
-import { readTextFile, writeFile } from "@tauri-apps/api/fs";
-import { appDataDir, join } from "@tauri-apps/api/path";
+import { readTextFile, writeFile, writeTextFile, createDir } from "@tauri-apps/api/fs";
+import { appDataDir, join, dirname } from "@tauri-apps/api/path";
 
 const getFilePath = async () => await join(await appDataDir(), "launcher-data.json");
+
+const ensureFolderExists = async () => {
+  const filePath = await getFilePath();
+  const dir = await dirname(filePath);
+  await createDir(dir, { recursive: true }); // ✅ creates the folder if missing
+};
 
 export const readData = async () => {
   try {
     const filePath = await getFilePath();
     const raw = await readTextFile(filePath);
     return JSON.parse(raw);
-  } catch {
-    return { emulators: [], games: [] }; // fallback if file doesn't exist
+  } catch (err) {
+    // File might not exist — create it with default structure
+    const defaultData = { emulators: [], games: [] };
+    try {
+      await ensureFolderExists();
+      const filePath = await getFilePath();
+      await writeTextFile(filePath, JSON.stringify(defaultData, null, 2));
+    } catch (writeErr) {
+      console.error("❌ Failed to create launcher-data.json:", writeErr);
+    }
+    return defaultData;
   }
 };
 
 const writeData = async (data) => {
+  await ensureFolderExists(); // ✅ make sure folder exists before writing
   const filePath = await getFilePath();
   await writeFile({ path: filePath, contents: JSON.stringify(data, null, 2) });
 };

@@ -11,7 +11,7 @@ export async function scanPS2Games(folderPath) {
   return isos.map((file) => ({
     title: file.name.replace(".iso", ""),
     romPath: file.path,
-    platform: "ps2",
+    platform: "PS2",
     id: Date.now().toString(36) + Math.random().toString(36).substring(2, 8)
   }));
 }
@@ -27,7 +27,7 @@ export async function scanPS3Games(folderPath) {
       games.push({
         title: item.path.split("\\").slice(-3, -2)[0], // parent folder as title
         romPath: ebootPath,
-        platform: "ps3",
+        platform: "PS3",
       });
     }
   }
