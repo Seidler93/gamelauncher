@@ -3,7 +3,7 @@ import './settingsBtn.css'
 import { useAppContext } from "../context/AppContext";
 
 export default function SettingsBtn() {
-  const { isAddGamesModalOpen, openAddGamesModal, closeAddGamesModal, } = useAppContext();
+  const { isAddGamesModalOpen, openAddGamesModal, closeAddGamesModal, openAddEmulatorModal } = useAppContext();
   const [open, setOpen] = useState(false);
   const ref = useRef();
   const options = ["Add Emulator", "Connect to Steam", "Settings"]
@@ -28,6 +28,9 @@ export default function SettingsBtn() {
         <ul className="dropdown-menu">
           <li onClick={() => openAddGamesModal()}>
             Add Game Folder
+          </li>
+          <li onClick={() => openAddEmulatorModal()}>
+            Add Emulator
           </li>
         </ul>
       )}

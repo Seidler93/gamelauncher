@@ -7,6 +7,7 @@ import LibraryNav from "./components/nav/libraryNav";
 import GameCard from "./components/gameCard";
 import { sampleGames } from "./tempHelpers";
 import AddGamesModal from "./components/addGamesModal";
+import AddEmulatorModal from "./components/addEmulatorModal";
 import { useAppContext } from "./context/AppContext";
 
 export default function App() {
@@ -15,20 +16,18 @@ export default function App() {
   const [platformOptions, setPlatformOptions] = useState(["all", "ps2", "ps3", "steam", "consoles"]);
   const [currentlyDisplayed, setCurrentlyDisplayed] = useState('all');
   const [addGamesModal, setaddGamesModal] = useState(false);
-  const { games, setGames } = useAppContext();
+  const { games, setGames, emulators } = useAppContext();
   
 
   useEffect(() => {
     if (games.length < 1 ) {
       setGames(sampleGames);
     }
+    console.log(emulators);
     
-    
-  }, [games]);
+  }, [games, emulators]);
 
   // have temporary games that i change what is in view and what is hidden
-
-  // button to add game folder
 
   // button to add emulator/steam app path
 
@@ -38,6 +37,7 @@ export default function App() {
     const res = await open({ multiple: false, directory: false });
     if (typeof res === "string") setExe(res.replace(/^"+|"+$/g, ""));
   }
+
   async function pickRom() {
     const res = await open({ multiple: false, directory: false });
     if (typeof res === "string") setRom(res.replace(/^"+|"+$/g, ""));
@@ -79,6 +79,7 @@ export default function App() {
           <GameCard key={game.id} game={game}/>
         ))}
       </div>
+      <AddEmulatorModal/>
       <AddGamesModal/>
     </div>
   );

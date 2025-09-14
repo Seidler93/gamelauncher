@@ -1,5 +1,5 @@
 import React from "react";
-import "./addGamesModal.css";
+import "./modal.css";
 import { useAppContext } from "../context/AppContext";
 import { open } from "@tauri-apps/api/dialog";
 import { useState } from "react";
@@ -25,7 +25,7 @@ export default function AddGamesModal() {
     }
   };
 
-  const emulators = ["PCSX2", "RPCS3", "Dolphin", "Custom"];
+  const emulatorNames = ["PCSX2", "RPCS3", "Dolphin", "Custom"];
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -46,7 +46,7 @@ export default function AddGamesModal() {
             onChange={handleChange}
           >
             <option value="">-- Choose Emulator --</option>
-            {emulators.map((emu) => (
+            {emulatorNames.map((emu) => (
               <option key={emu} value={emu}>
                 {emu}
               </option>

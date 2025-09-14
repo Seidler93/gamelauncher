@@ -60,3 +60,17 @@ export async function scanForGames(emulator, folderPath) {
       return [];
   }
 }
+
+// export async function scanForEmulator(emulator, folderPath) {
+//   switch (emulator) {
+//     case "RPCS3":
+//       return await scanPS3Games(folderPath);
+//     case "PCSX2":
+//       return await scanPS2Games(folderPath);
+//     case "Steam":
+//       return await scanSteamGames(folderPath);
+//     default:
+//       console.warn(`Unknown emulator type: ${emulator}`);
+//       return [];
+//   }
+// }
