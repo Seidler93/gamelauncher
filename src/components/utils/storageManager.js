@@ -28,7 +28,7 @@ export const readData = async () => {
   }
 };
 
-const writeData = async (data) => {
+export const writeData = async (data) => {
   await ensureFolderExists(); // ✅ make sure folder exists before writing
   const filePath = await getFilePath();
   await writeFile({ path: filePath, contents: JSON.stringify(data, null, 2) });

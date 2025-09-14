@@ -3,7 +3,7 @@ import './LibraryNav.css'
 import SettingsBtn from '../settingsBtn'
 
 export default function LibraryNav({ currentlyDisplayed, platformOptions, setCurrentlyDisplayed }) {
-
+  
   return (
     <nav>
       <span>Logo</span>

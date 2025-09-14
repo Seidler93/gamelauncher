@@ -4,6 +4,23 @@ import { readData } from "../components/utils/storageManager";
 const AppContext = createContext();
 export const useAppContext = () => useContext(AppContext);
 
+async function getToken() {
+  const res = await fetch("https://id.twitch.tv/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: import.meta.env.VITE_TWITCH_CLIENT_ID,
+      client_secret: import.meta.env.VITE_TWITCH_CLIENT_SECRET,
+      grant_type: "client_credentials"
+    }),
+  });
+
+  const data = await res.json();
+  console.log(data.access_token);
+
+  return data.access_token;
+}
+
 export function AppProvider({ children }) {
   // 🔁 Async load state
   const [games, setGames] = useState([]);
@@ -20,13 +37,18 @@ export function AppProvider({ children }) {
 
   const addGame = (game) => setGames(prev => [...prev, game]);
 
+  // Twitch token
+  const [igdbToken, setIgdbToken] = useState("");
+
   // 🔄 Load data on mount
   useEffect(() => {
     async function loadData() {
       try {
         const data = await readData();
+        const token = await getToken();
         setGames(data.games || []);
         setEmulators(data.emulators || []);
+        setIgdbToken(token || "")
       } catch (err) {
         console.error("Failed to load data:", err);
       } finally {
@@ -54,17 +76,18 @@ export function AppProvider({ children }) {
         closeAddEmulatorModal: () => setIsAddEmulatorModalOpen(false),
 
         // games
-        games,
-        setGames,
+        games, setGames,
         addGame,
 
         // emulators
-        emulators,
-        setEmulators,
+        emulators, setEmulators,
 
         // theme
         theme,
-        toggleTheme
+        toggleTheme,
+
+        // twitch token
+        igdbToken, setIgdbToken
       }}
     >
       {children}
