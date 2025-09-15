@@ -56,6 +56,18 @@ export default function App() {
     alert(`Launched (pid ${pid})`);
   }
 
+  // <h2>Stored Emulators</h2>
+  // {Array.isArray(emulators) && emulators.length > 0 ? (
+  //   <ul>
+  //     {emulators.map((emu) => (
+  //       <li key={emu.id || emu.name}>
+  //         <strong>{emu.name}</strong> — <code>{emu.exe}</code>
+  //       </li>
+  //     ))}
+  //   </ul>
+  // ) : (
+  //   <p>No emulators saved yet.</p>
+  // )}
   return (
     <div>
       <LibraryNav currentlyDisplayed={currentlyDisplayed} platformOptions={platformOptions} setCurrentlyDisplayed={setCurrentlyDisplayed}/>
@@ -67,21 +79,9 @@ export default function App() {
         ) : (
           <p>No games found. <button >Scan for Games</button></p>
         )}
-        <h2>Stored Emulators</h2>
-        {Array.isArray(emulators) && emulators.length > 0 ? (
-          <ul>
-            {emulators.map((emu) => (
-              <li key={emu.id || emu.name}>
-                <strong>{emu.name}</strong> — <code>{emu.exe}</code>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No emulators saved yet.</p>
-        )}
       </div>
-      <AddEmulatorModal/>
       <AddGamesModal/>
+      <AddEmulatorModal/>
     </div>
   );
 }
