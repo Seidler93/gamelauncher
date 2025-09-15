@@ -21,14 +21,18 @@ export default function GameCard({ game }) {
   
   return (
     <div key={game.id} className='game-card' onClick={cycleCover} onDoubleClick={() => launchGame(findEmuPath(), game)}>
-      {game.coverOptions?.length > 0 ? (
+      {/* {game.coverOptions?.length > 0 ? (
         <img src={game.coverOptions[currentCover].imageUrl} alt={game.title || game.name} />
       ) : (
         <img
           src={game.coverUrl || game.coverOptions?.[currentCover]?.imageUrl || "/ps2-game-cover-default.png"}
           alt={game.title || game.name}
         />
-      )}
+      )} */}
+      <img
+        src={game.coverUrl || game.coverOptions?.[currentCover]?.imageUrl || "/ps2-game-cover-default.png"}
+        alt={game.title || game.name}
+      />
     </div>
 
   )
