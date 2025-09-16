@@ -10,6 +10,7 @@ import AddGamesModal from "./components/addGamesModal";
 import AddEmulatorModal from "./components/addEmulatorModal";
 import { useAppContext } from "./context/AppContext";
 import { readData } from "./components/utils/storageManager";
+import GameDetailsAside from "./components/gameDetailsAside";
 
 export default function App() {
   const [exe, setExe] = useState("");
@@ -18,43 +19,7 @@ export default function App() {
   const [currentlyDisplayed, setCurrentlyDisplayed] = useState('all');
   const [addGamesModal, setaddGamesModal] = useState(false);
   const { games, setGames, emulators } = useAppContext();
-  
-
-  // useEffect(() => {
-  //   if (games.length < 1 ) {
-  //     setGames(readData());
-  //   }
-  //   console.log(emulators);
-    
-  // }, [games, emulators]);
-
-  // have temporary games that i change what is in view and what is hidden
-
-  // button to add emulator/steam app path
-
-  // folders for launch logic
-
-  async function pickExe() {
-    const res = await open({ multiple: false, directory: false });
-    if (typeof res === "string") setExe(res.replace(/^"+|"+$/g, ""));
-  }
-
-  async function pickRom() {
-    const res = await open({ multiple: false, directory: false });
-    if (typeof res === "string") setRom(res.replace(/^"+|"+$/g, ""));
-  }
-
-  async function launch() {
-    if (!exe) return alert("Pick an emulator .exe first");
-    const cwd = await dirname(exe);
-    const args = rom ? ["${ROM}".replace("${ROM}", rom)] : [];
-    if (!(await exists(exe))) return alert("EXE not found");
-    if (rom && !(await exists(rom))) return alert("ROM not found");
-
-    console.log("[launch]", exe, args, cwd);
-    const pid = await invoke("launch_process", { spec: { exe, args, cwd } });
-    alert(`Launched (pid ${pid})`);
-  }
+  const [selectedGame, setSelectedGame] = useState(null);
 
   // <h2>Stored Emulators</h2>
   // {Array.isArray(emulators) && emulators.length > 0 ? (
@@ -68,18 +33,26 @@ export default function App() {
   // ) : (
   //   <p>No emulators saved yet.</p>
   // )}
+
+  const handleGameClick = (game) => {   
+    console.log('test');
+     
+    setSelectedGame(game);
+  };
+
   return (
     <div>
       <LibraryNav currentlyDisplayed={currentlyDisplayed} platformOptions={platformOptions} setCurrentlyDisplayed={setCurrentlyDisplayed}/>
       <div className="library-container">
         {Array.isArray(games) && games.length > 0 ? (
           games.map((game) => (
-            <GameCard key={game.id} game={game} />
+            <GameCard key={game.id} game={game} handleGameClick={handleGameClick} />
           ))
         ) : (
           <p>No games found. <button >Scan for Games</button></p>
         )}
       </div>
+      <GameDetailsAside game={selectedGame} onClose={() => setSelectedGame(null)} />
       <AddGamesModal/>
       <AddEmulatorModal/>
     </div>
