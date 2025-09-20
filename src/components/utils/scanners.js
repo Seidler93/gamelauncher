@@ -61,6 +61,16 @@ export async function scanForGames(emulator, folderPath) {
   }
 }
 
+export async function scanForAllGames(folderPath) {
+  const [ps2Games, ps3Games] = await Promise.all([
+    scanPS2Games(folderPath),
+    scanPS3Games(folderPath)
+  ]);
+
+  return [...ps2Games, ...ps3Games];
+}
+
+
 // export async function scanForEmulator(emulator, folderPath) {
 //   switch (emulator) {
 //     case "RPCS3":

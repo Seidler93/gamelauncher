@@ -16,7 +16,7 @@ export const readData = async () => {
     return JSON.parse(raw);
   } catch (err) {
     // File might not exist — create it with default structure
-    const defaultData = { emulators: [], games: [] };
+    const defaultData = { emulators: [], games: [], gameFolders: [] };
     try {
       await ensureFolderExists();
       const filePath = await getFilePath();
@@ -45,6 +45,12 @@ export const addGame = async (game) => {
   data.games = mergeOrReplace(data.games, [game]);
   await writeData(data);
 };
+
+export const addGameFolderPath = async (path) => {
+  const data = await readData();
+  data.gameFolders = mergeOrReplace(data.gameFolders, [path])
+  await writeData(data);
+}
 
 export const addEmulator = async (emulator) => {
   const data = await readData();

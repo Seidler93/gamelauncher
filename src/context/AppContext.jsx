@@ -40,6 +40,8 @@ export function AppProvider({ children }) {
   // Twitch token
   const [igdbToken, setIgdbToken] = useState("");
 
+  const [gameFolders, setGameFolders] = useState([])
+
   // 🔄 Load data on mount
   useEffect(() => {
     async function loadData() {
@@ -48,6 +50,7 @@ export function AppProvider({ children }) {
         const token = await getToken();
         setGames(data.games || []);
         setEmulators(data.emulators || []);
+        setGameFolders(data.gameFolders || []);
         setIgdbToken(token || "")
       } catch (err) {
         console.error("Failed to load data:", err);
@@ -81,6 +84,9 @@ export function AppProvider({ children }) {
 
         // emulators
         emulators, setEmulators,
+
+        // game folders
+        gameFolders, setGameFolders,
 
         // theme
         theme,
