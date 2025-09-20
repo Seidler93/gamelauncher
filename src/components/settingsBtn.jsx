@@ -35,20 +35,21 @@ export default function SettingsBtn() {
   };
 
   const handleScanForGames = async () => {
-    let newGames = [];
-    
-    for (const folder of gameFolders) {
-      const games = await scanForAllGames(folder) || [];
-      newGames = [...newGames, ...games]
-    }
+    const scannedGames = await scanForAllGames(gameFolders);
 
-    setGames([...newGames]);
+    // get existing IDs from state
+    const existingIds = new Set(games.map(g => g.romPath));
 
-    for (const game of newGames) {
+    // only keep ones that aren't already in games
+    const uniqueNewGames = scannedGames.filter(g => !existingIds.has(g.romPath));
+
+    // Update state immediately
+    setGames(prev => [...prev, ...uniqueNewGames]);
+
+    for (const game of uniqueNewGames) {
       await addGame(game);
-    }
+    }    
   }
-
 
   return (
     <div className="dropdown" ref={ref}>
@@ -58,7 +59,7 @@ export default function SettingsBtn() {
       {open && (
         <ul className="dropdown-menu">
           <li onClick={openAddGamesModal}>Add Game Folder</li> 
-          <li>Scan For Games</li>
+          <li onClick={handleScanForGames}>Scan For Games</li>
           <li onClick={openAddEmulatorModal}>Add Emulator</li>
           <li onClick={handleFetchAll}>Get All Game Covers</li>
         </ul>

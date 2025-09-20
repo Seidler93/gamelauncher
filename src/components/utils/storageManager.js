@@ -13,7 +13,14 @@ export const readData = async () => {
   try {
     const filePath = await getFilePath();
     const raw = await readTextFile(filePath);
-    return JSON.parse(raw);
+    let data = JSON.parse(raw);
+
+    // ✅ Ensure all keys exist, even in older files
+    if (!Array.isArray(data.emulators)) data.emulators = [];
+    if (!Array.isArray(data.games)) data.games = [];
+    if (!Array.isArray(data.gameFolders)) data.gameFolders = [];
+
+    return data;
   } catch (err) {
     // File might not exist — create it with default structure
     const defaultData = { emulators: [], games: [], gameFolders: [] };
@@ -48,9 +55,14 @@ export const addGame = async (game) => {
 
 export const addGameFolderPath = async (path) => {
   const data = await readData();
-  data.gameFolders = mergeOrReplace(data.gameFolders, [path])
-  await writeData(data);
-}
+
+  // Only add the path if it doesn't already exist
+  if (!data.gameFolders.includes(path)) {
+    data.gameFolders.push(path);
+    await writeData(data);
+  }
+};
+
 
 export const addEmulator = async (emulator) => {
   const data = await readData();

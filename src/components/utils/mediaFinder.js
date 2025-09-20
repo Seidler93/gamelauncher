@@ -79,7 +79,7 @@ export async function fetchAllGameCovers({ games, igdbToken, setGames }) {
     })
   );
 
-  setGames(updatedGames);
+  setGames(prev => [...prev, ...updatedGames]);
 
   try {
     const currentData = await readData();
@@ -92,6 +92,57 @@ export async function fetchAllGameCovers({ games, igdbToken, setGames }) {
     console.error("❌ Failed to write updated game data:", err);
   }
 }
+
+/**
+ * Fetches metadata (covers, genres, summary, etc.) for an array of games
+ * and returns a new array of enriched game objects.
+ *
+ * @param {Array} games - The list of game objects you want to enrich.
+ * @param {string} igdbToken - The IGDB API token for authentication.
+ * @returns {Promise<Array>} - A new array of games with extra fields (coverUrl, summary, genres, etc.)
+ */
+export async function fetchGameCovers(games, igdbToken) {
+  return Promise.all(
+    games.map(async (game) => {
+      // 🔍 Query IGDB for metadata using the game title and platform ID
+      const metadata = await getGameMetadata(
+        game.title || game.name,   // fall back to "name" if "title" isn't set
+        getPlatformId(game.platform), // map our platform string to IGDB's platform ID
+        igdbToken
+      );
+
+      // 🛑 If no metadata was returned, just return the original game unchanged
+      if (!metadata || metadata.length === 0) {
+        return game;
+      }
+
+      // ✅ Take the first match (IGDB might return multiple results)
+      const firstMatch = metadata[0];
+
+      // 🎨 Build the enriched game object
+      return {
+        ...game, // preserve all original fields
+
+        // Cover options: keep all matches that have a coverUrl
+        coverOptions: metadata
+          .map(m => ({ name: m.name, imageUrl: m.coverUrl }))
+          .filter(c => !!c.imageUrl),
+
+        // Default cover is from the first match
+        coverUrl: firstMatch.coverUrl,
+
+        // Additional metadata from IGDB
+        summary: firstMatch.summary,
+        genres: firstMatch.genres,
+        releaseDate: firstMatch.releaseDate,
+        screenshots: firstMatch.screenshots,
+        videos: firstMatch.videos,
+      };
+    })
+  );
+}
+
+
 
 export function getPlatformId(platformName) {
   const platformMap = {

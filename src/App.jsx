@@ -5,11 +5,12 @@ import AddGamesModal from "./components/addGamesModal";
 import AddEmulatorModal from "./components/addEmulatorModal";
 import { useAppContext } from "./context/AppContext";
 import GameDetailsAside from "./components/gameDetailsAside";
+import { sanitizeGameTitle } from "./components/utils/mediaFinder";
 
 export default function App() {
   const [platformOptions, setPlatformOptions] = useState(["All", "PS2", "PS3", "Steam", "Launchers"]);
   const [currentlyDisplayed, setCurrentlyDisplayed] = useState('all');
-  const { games, setGames, emulators } = useAppContext();
+  const { games, setGames, emulators, gameFolders } = useAppContext();
   const [selectedGame, setSelectedGame] = useState(null);
 
   // <h2>Stored Emulators</h2>
@@ -46,6 +47,15 @@ export default function App() {
       <GameDetailsAside game={selectedGame} onClose={() => setSelectedGame(null)} />
       <AddGamesModal/>
       <AddEmulatorModal/>
+      {games.map(game =>
+        <li>{sanitizeGameTitle(game.title)}</li>
+      )}
+      {emulators.map(e =>
+        <li>{e.name}</li>
+      )}
+      {gameFolders.map(path =>
+        <li>{path}</li>
+      )}
     </div>
   );
 }
