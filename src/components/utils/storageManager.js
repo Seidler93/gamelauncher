@@ -1,4 +1,4 @@
-import { readTextFile, writeFile, writeTextFile, createDir } from "@tauri-apps/api/fs";
+import { readTextFile, writeFile, writeTextFile, createDir, readDir } from "@tauri-apps/api/fs";
 import { appDataDir, join, dirname } from "@tauri-apps/api/path";
 
 const getFilePath = async () => await join(await appDataDir(), "launcher-data.json");
@@ -63,7 +63,6 @@ export const addGameFolderPath = async (path) => {
   }
 };
 
-
 export const addEmulator = async (emulator) => {
   const data = await readData();
   data.emulators = mergeOrReplace(data.emulators, [emulator]);
@@ -80,4 +79,43 @@ export const updateEmulator = async (updatedEmulator) => {
   const data = await readData();
   data.emulators = data.emulators.map((e) => (e.id === updatedEmulator.id ? { ...e, ...updatedEmulator } : e));
   await writeData(data);
+};
+
+export const getEmulatorPathByPlatform = async (platform) => {
+  const data = await readData();
+
+  const emulator = data.emulators.find((e) => e.platform === platform);
+
+  // Return the path if found, else null
+  return emulator ? emulator.path : null;
+};
+
+export const findSaveStateFile = async (emulatorPath, gameCode) => {
+  // console.log(emulatorPath, gameCode);
+  
+
+  // 1. Emulator folder
+  const emuDir = await dirname(emulatorPath);
+
+  // 2. sstates folder
+  const sstatesDir = await join(emuDir, "sstates");
+  
+  // 3. Read all files in sstates
+  const files = await readDir(sstatesDir);
+  console.log(files, gameCode);
+
+  // 4. Filter files that include the gameCode
+  const matchingFiles = files.filter(f => f.name && f.name.includes(gameCode));
+
+  if (matchingFiles.length === 0) return null;
+
+  // 5. Pick the most recent one
+  let latestFile = matchingFiles[0];
+  for (const f of matchingFiles) {
+    if (f.metadata?.modifiedAt > latestFile.metadata?.modifiedAt) {
+      latestFile = f;
+    }
+  }
+
+  return await join(sstatesDir, latestFile.name);
 };

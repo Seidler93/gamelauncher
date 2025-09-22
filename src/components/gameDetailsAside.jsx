@@ -1,5 +1,7 @@
 import './gameDetailsAside.css';
-import { sanitizeGameTitle } from './utils/mediaFinder';
+import { sanitizeGameTitle, getGameCode } from './utils/mediaFinder';
+import { uploadSaveState } from './utils/firebaseHelpers';
+import { getEmulatorPathByPlatform, findSaveStateFile } from './utils/storageManager';
 
 export default function GameDetailsAside({ game, onClose }) {
   if (!game) return null;
@@ -7,6 +9,29 @@ export default function GameDetailsAside({ game, onClose }) {
   const formatDate = (timestamp) => {
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString();
+  };
+
+  const handleUpload = async () => {
+    const gameCode = getGameCode(game.title);
+
+    const emulatorPath = await getEmulatorPathByPlatform(game.platform);
+
+    // console.log(gameCode);
+    
+    
+    const saveStatePath = await findSaveStateFile(emulatorPath, gameCode);
+    console.log(saveStatePath);
+    
+    
+  //   try {
+  //     // Call your upload function with game info
+  //     await uploadSaveState("user123", game.title, game.platform);
+  //     // 👆 replace "user123" with real userId and "1" with slot if dynamic
+  //     alert("Save state uploaded!");
+  //   } catch (err) {
+  //     console.error("Upload failed:", err);
+  //     alert("Upload failed.");
+  //   }
   };
 
   return (
@@ -24,6 +49,13 @@ export default function GameDetailsAside({ game, onClose }) {
 
       {/* Title */}
       <h2>{sanitizeGameTitle(game.title)}</h2>
+
+        <button 
+          className="upload-btn"
+          onClick={handleUpload}
+        >
+          Upload Save State
+        </button>
 
       {/* Summary */}
       {game.summary && (

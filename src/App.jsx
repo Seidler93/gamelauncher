@@ -27,8 +27,6 @@ export default function App() {
   // )}
 
   const handleGameClick = (game) => {   
-    console.log('test');
-     
     setSelectedGame(game);
   };
 
@@ -47,7 +45,7 @@ export default function App() {
       <GameDetailsAside game={selectedGame} onClose={() => setSelectedGame(null)} />
       <AddGamesModal/>
       <AddEmulatorModal/>
-      {games.map(game =>
+      {/* {games.map(game =>
         <li>{sanitizeGameTitle(game.title)}</li>
       )}
       {emulators.map(e =>
@@ -55,7 +53,7 @@ export default function App() {
       )}
       {gameFolders.map(path =>
         <li>{path}</li>
-      )}
+      )} */}
     </div>
   );
 }

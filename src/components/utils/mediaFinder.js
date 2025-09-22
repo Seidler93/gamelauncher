@@ -17,6 +17,33 @@ export function sanitizeGameTitle(title) {
   return title.replace(/\s*\(.*?\)/g, "").trim();
 }
 
+export function getGameCode(nameOrCode) {
+  // 1. Clean the input (remove region/revision info in parentheses)
+  const cleaned = nameOrCode
+    .trim()
+    .replace(/\s*\(.*?\)\s*$/g, "") // remove anything in (...) at the end
+    .trim();
+
+  // console.log("Cleaned:", cleaned);
+
+  // 2. Check if it's already an SLUS/SCUS/SLES/SCES code
+  const match = cleaned.match(/\b(SLUS|SCUS|SLES|SCES)[-\s]?(\d{4,5})\b/);
+  if (match) {
+    return `${match[1]}-${match[2]}`; // normalize format
+  }
+
+  // 3. Reverse search the slusMap for a matching game name
+  const foundEntry = Object.entries(slusMap).find(
+    ([code, title]) => title.toLowerCase() === cleaned.toLowerCase()
+  );
+
+  // console.log("Found:", foundEntry ? foundEntry[0] : null);
+
+  // 4. Return SLUS code if found, otherwise null
+  return foundEntry ? foundEntry[0] : null;
+}
+
+
 // 📦 Get all media + metadata
 export async function getGameMetadata(gameName, platformId, token) {
   const cleanName = sanitizeGameTitle(gameName);
