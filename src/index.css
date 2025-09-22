@@ -35,6 +35,7 @@ h1 {
   margin: 0;
   box-sizing: border-box;
   padding: 65px 25px;
-  gap: 15px;
+  gap: 5px 15px;
   align-items: start;
+  items
 }

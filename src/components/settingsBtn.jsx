@@ -4,6 +4,7 @@ import { useAppContext } from "../context/AppContext";
 import { fetchAllGameCovers } from "./utils/mediaFinder";
 import { scanForAllGames } from "./utils/scanners";
 import { open } from "@tauri-apps/api/dialog";
+import { fetchGameCovers } from "./utils/mediaFinder";
 
 export default function SettingsBtn() {
   const {
@@ -43,10 +44,13 @@ export default function SettingsBtn() {
     // only keep ones that aren't already in games
     const uniqueNewGames = scannedGames.filter(g => !existingIds.has(g.romPath));
 
-    // Update state immediately
-    setGames(prev => [...prev, ...uniqueNewGames]);
+    // Enrich new games with IGDB fields
+    const gamesWithCovers = await fetchGameCovers(uniqueNewGames, igdbToken);
+  
+    // Update state
+    setGames(prev => [...prev, ...gamesWithCovers]);
 
-    for (const game of uniqueNewGames) {
+    for (const game of gamesWithCovers) {
       await addGame(game);
     }    
   }
