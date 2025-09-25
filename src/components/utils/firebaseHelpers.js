@@ -1,17 +1,12 @@
 import { getStorage, ref, uploadBytes } from "firebase/storage";
-import fs from "fs";
+import { readBinaryFile } from "@tauri-apps/api/fs";
 import { storage } from "../../firebase";
 
+export async function uploadSaveState(userId, gameId, filePath) {
+  // Read file as binary with Tauri
+  const fileBuffer = await readBinaryFile(filePath);
 
-export async function uploadSaveState(userId, gameName, platform) {
-  // Get SLUS name
-
-  // Get platform path to find the sstates folder and get actual state file
-
-
-
-  // Read the local save state
-  const fileBuffer = fs.readFileSync(filePath);
+  const slot = getSlotFromFileName(filePath);
 
   // Create a reference in Storage
   const storageRef = ref(storage, `savestates/${userId}/${gameId}/slot${slot}.p2s`);
@@ -21,3 +16,12 @@ export async function uploadSaveState(userId, gameName, platform) {
 
   console.log("Save state uploaded:", storageRef.fullPath);
 }
+
+export function getSlotFromFileName(fileName) {
+  const match = fileName.match(/\.(\d{2})\.p2s$/i);
+  if (match) {
+    return parseInt(match[1], 10); // convert "01" → 1
+  }
+  return null;
+} 
+

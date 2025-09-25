@@ -18,20 +18,18 @@ export default function GameDetailsAside({ game, onClose }) {
 
     // console.log(gameCode);
     
-    
     const saveStatePath = await findSaveStateFile(emulatorPath, gameCode);
     console.log(saveStatePath);
     
-    
-  //   try {
-  //     // Call your upload function with game info
-  //     await uploadSaveState("user123", game.title, game.platform);
-  //     // 👆 replace "user123" with real userId and "1" with slot if dynamic
-  //     alert("Save state uploaded!");
-  //   } catch (err) {
-  //     console.error("Upload failed:", err);
-  //     alert("Upload failed.");
-  //   }
+    try {
+      // Call your upload function with game info
+      await uploadSaveState("user123", gameCode, saveStatePath );
+      // 👆 replace "user123" with real userId
+      alert("Save state uploaded!");
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed.");
+    }
   };
 
   return (
