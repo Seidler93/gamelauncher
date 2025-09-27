@@ -1,7 +1,7 @@
 import './gameDetailsAside.css';
 import { useEffect, useState } from 'react';
 import { sanitizeGameTitle, getGameCode } from './utils/mediaFinder';
-import { uploadSaveState, listSavestates } from './utils/firebaseHelpers';
+import { uploadSaveState, listSavestates, downloadSaveStateToEmulator} from './utils/firebaseHelpers';
 import { getEmulatorPathByPlatform, findSaveStateFile } from './utils/storageManager';
 
 export default function GameDetailsAside({ game, onClose }) {
@@ -16,6 +16,8 @@ export default function GameDetailsAside({ game, onClose }) {
       setSavestates(files);
     };
     fetchSavestates();
+    console.log(savestates);
+    
   }, [game]);
 
   const handleUpload = async () => {
@@ -26,6 +28,22 @@ export default function GameDetailsAside({ game, onClose }) {
 
     try {
       await uploadSaveState("user123", gameCode, saveStatePath);
+      alert("Save state uploaded!");
+      const files = await listSavestates("user123", gameCode);
+      setSavestates(files);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed.");
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!game) return;
+    const gameCode = getGameCode(game.title);
+    const emulatorPath = await getEmulatorPathByPlatform(game.platform);
+
+    try {
+      await downloadSaveStateToEmulator()
       alert("Save state uploaded!");
       const files = await listSavestates("user123", gameCode);
       setSavestates(files);
