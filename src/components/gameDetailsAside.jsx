@@ -1,23 +1,38 @@
 import './gameDetailsAside.css';
 import { useEffect, useState } from 'react';
 import { sanitizeGameTitle, getGameCode } from './utils/mediaFinder';
-import { uploadSaveState, listSavestates, downloadSaveStateToEmulator} from './utils/firebaseHelpers';
+import {
+  uploadSaveState,
+  listSavestates,
+  downloadSaveStateToEmulator,
+  scanLocalSavestates
+} from './utils/firebaseHelpers';
 import { getEmulatorPathByPlatform, findSaveStateFile } from './utils/storageManager';
+import { launchGame } from './utils/launchers';
 
 export default function GameDetailsAside({ game, onClose }) {
   const [savestates, setSavestates] = useState([]);
+  const [localSavestates, setLocalSavestates] = useState([]);
 
-  // ✅ Hooks always run
   useEffect(() => {
-    if (!game) return; // bail inside hook, not before
+    if (!game) return;
+
     const fetchSavestates = async () => {
       const gameCode = getGameCode(game.title);
-      const files = await listSavestates("user123", gameCode);
-      setSavestates(files);
+
+      // 🌩️ Fetch from Firebase
+      const cloudFiles = await listSavestates("user123", gameCode);
+      setSavestates(cloudFiles);
+
+      // 💾 Fetch local savestates
+      const localFiles = await scanLocalSavestates("H:\\PCSX2\\pcsx2-qt.exe", gameCode);
+      setLocalSavestates(localFiles);
+
+      console.log("✅ Cloud:", cloudFiles);
+      console.log("✅ Local:", localFiles);
     };
+
     fetchSavestates();
-    console.log(savestates);
-    
   }, [game]);
 
   const handleUpload = async () => {
@@ -32,40 +47,41 @@ export default function GameDetailsAside({ game, onClose }) {
       const files = await listSavestates("user123", gameCode);
       setSavestates(files);
     } catch (err) {
-      console.error("Upload failed:", err);
+      console.error("❌ Upload failed:", err);
       alert("Upload failed.");
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (url, filename) => {
     if (!game) return;
     const gameCode = getGameCode(game.title);
     const emulatorPath = await getEmulatorPathByPlatform(game.platform);
 
     try {
-      await downloadSaveStateToEmulator()
-      alert("Save state uploaded!");
-      const files = await listSavestates("user123", gameCode);
-      setSavestates(files);
+      await downloadSaveStateToEmulator(url, filename, emulatorPath);
+      alert("✅ Save state downloaded!");
     } catch (err) {
-      console.error("Upload failed:", err);
-      alert("Upload failed.");
+      console.error("❌ Download failed:", err);
+      alert("Download failed.");
     }
   };
 
-  // ✅ Safe early return here
-  if (!game) return null;
-
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString();
+  const handleLaunch = async (savePath) => {
+    try {
+      const emulatorPath = await getEmulatorPathByPlatform(game.platform);
+      await launchGame(emulatorPath, game, savePath);
+      console.log("Game launched with savestate!");
+    } catch (err) {
+      console.error("Launch failed:", err);
+    }
   };
+
+  if (!game) return null;
 
   return (
     <aside className="game-details-aside">
       <button className="close-button" onClick={onClose}>✕</button>
       <div className="inner">
-        {/* Cover */}
         <div className="cover-section">
           <img
             src={game.coverUrl || '/ps2-game-cover-default.png'}
@@ -80,25 +96,41 @@ export default function GameDetailsAside({ game, onClose }) {
           Upload Save State
         </button>
 
-        {/* Savestates */}
-        {savestates.length > 0 ? (
-          <div className="savestates">
-            <h4>Available Savestates</h4>
+        {/* 🌩️ Cloud Savestates */}
+        <div className="savestates">
+          <h4>Cloud Savestates</h4>
+          {savestates.length > 0 ? (
             <ul>
               {savestates.map((s, i) => (
                 <li key={i}>
-                  <a href={s.url} target="_blank" rel="noreferrer">
-                    {s.name}
-                  </a>
+                  <span>{s.name}</span>
+                  <button onClick={() => handleDownload(s.url, s.name)}>
+                    ⬇ Download
+                  </button>
                 </li>
               ))}
             </ul>
-          </div>
-        ) : (
-          <p>No savestates available.</p>
-        )}
+          ) : (
+            <p className="no-saves">No cloud saves found</p>
+          )}
+        </div>
 
-        {/* Other sections (summary, genres, screenshots, etc.) */}
+        {/* 💾 Local Savestates */}
+        <div className="savestates">
+          <h4>Local Savestates</h4>
+          {localSavestates.length > 0 ? (
+            <ul>
+              {localSavestates.map((s, i) => (
+                <li key={i}>
+                  <span>{s.name}</span>
+                  <button onClick={() => handleLaunch(s.path)}>▶ Launch</button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="no-saves">No local saves found</p>
+          )}
+        </div>
       </div>
     </aside>
   );

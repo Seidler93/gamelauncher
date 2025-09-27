@@ -1,6 +1,7 @@
-import { ref, uploadBytes, listAll, getDownloadURL  } from "firebase/storage";
-import { readBinaryFile, writeBinaryFile, BaseDirectory, createDir } from "@tauri-apps/api/fs";
+import { ref, uploadBytes, listAll, getDownloadURL, getBytes  } from "firebase/storage";
+import { readBinaryFile, writeBinaryFile, BaseDirectory, createDir, readDir } from "@tauri-apps/api/fs";
 import { storage } from "../../firebase";
+import { dirname, join } from "@tauri-apps/api/path";
 
 export async function uploadSaveState(userId, gameId, filePath) {
   // Read file as binary with Tauri
@@ -26,7 +27,7 @@ export function getSlotFromFileName(fileName) {
 } 
 
 export async function listSavestates(userId, gameCode) {
-  console.log(userId + gameCode);
+  // console.log(userId + gameCode);
   
   const folderRef = ref(storage, `savestates/${userId}/${gameCode}/`);
   try {
@@ -46,29 +47,51 @@ export async function listSavestates(userId, gameCode) {
 
 export async function downloadSaveStateToEmulator(firebasePath, filename, emulatorExePath) {
   try {
-    // 1. Get Firebase URL
+    // 1️⃣ Get exact binary from Firebase Storage
     const fileRef = ref(storage, firebasePath);
-    const url = await getDownloadURL(fileRef);
+    const buffer = await getBytes(fileRef); // ✅ no CORS, exact bytes
 
-    // 2. Fetch file as binary
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch save state");
-    const buffer = await response.arrayBuffer();
+    // 2️⃣ Build local path
+    const exeDir = await dirname(emulatorExePath);
+    const sstatesDir = await join(exeDir, "sstates");
+    const localPath = await join(sstatesDir, filename);
 
-    // 3. Build emulator sstates path
-    const exeDir = path.dirname(emulatorExePath);       // folder containing exe
-    const sstatesDir = path.join(exeDir, "sstates");   // .../sstates
-    const localPath = path.join(sstatesDir, filename);
-
-    // 4. Ensure sstates folder exists
+    // 3️⃣ Ensure folder exists & save
     await createDir(sstatesDir, { recursive: true });
-
-    // 5. Write the save file into emulator sstates
     await writeBinaryFile(localPath, buffer);
 
+    console.log(`✅ Saved valid .p2s to ${localPath}`);
     return localPath;
   } catch (err) {
-    console.error("Download failed:", err);
+    console.error("❌ Download failed:", err);
     throw err;
   }
+}
+
+export async function scanLocalSavestates(emulatorExePath, gameCode = null) {
+  const exeDir = await dirname(emulatorExePath);
+  const sstatesDir = await join(exeDir, "sstates");
+
+  try {
+    const files = await readDir(sstatesDir);
+
+    const savestates = files
+      .filter(f => f.name.endsWith(".p2s"))
+      .filter(f => !gameCode || f.name.includes(gameCode))
+      .map(f => ({
+        name: f.name,
+        path: f.path,
+        slot: extractSlotFromFilename(f.name),
+      }));
+
+    return savestates;
+  } catch (err) {
+    console.error("❌ Failed to scan savestates:", err);
+    return [];
+  }
+}
+
+function extractSlotFromFilename(filename) {
+  const match = filename.match(/\.0?(\d)\.p2s$/);
+  return match ? parseInt(match[1], 10) : null;
 }
