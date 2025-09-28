@@ -30,6 +30,7 @@ export default function GameDetailsAside({ game, onClose }) {
 
       console.log("✅ Cloud:", cloudFiles);
       console.log("✅ Local:", localFiles);
+      console.log(game)
     };
 
     fetchSavestates();
@@ -76,6 +77,11 @@ export default function GameDetailsAside({ game, onClose }) {
     }
   };
 
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleDateString();
+  };
+
   if (!game) return null;
 
   return (
@@ -90,6 +96,7 @@ export default function GameDetailsAside({ game, onClose }) {
           />
         </div>
 
+        {/* Title */}
         <h2>{sanitizeGameTitle(game.title)}</h2>
 
         <button className="upload-btn" onClick={handleUpload}>
@@ -131,6 +138,57 @@ export default function GameDetailsAside({ game, onClose }) {
             <p className="no-saves">No local saves found</p>
           )}
         </div>
+
+        {/* Summary */}
+        {game.summary && (
+          <p className="summary">{game.summary}</p>
+        )}
+
+        {/* Release Date */}
+        {game.releaseDate && (
+          <p><strong>Release:</strong> {formatDate(game.releaseDate)}</p>
+        )}
+
+        {/* Genres */}
+        {game.genres?.length > 0 && (
+          <p><strong>Genres:</strong> {game.genres.join(', ')}</p>
+        )}
+
+        {/* Screenshots */}
+        {game.screenshots?.length > 0 && (
+          <div className="screenshots">
+            <h4>Screenshots</h4>
+            <div className="screenshot-list">
+              {game.screenshots.map((url, i) => (
+                <img key={i} src={url} alt={`Screenshot ${i + 1}`} className="screenshot" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Videos */}
+        {game.videos?.length > 0 && (
+          <div className="videos">
+            <h4>Videos</h4>
+            {game.videos.map((vid, i) => {
+              // Extract video ID if it's a full URL
+              let videoId = vid;
+              const match = vid.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+              if (match) videoId = match[1];
+
+              return (
+                <iframe
+                  key={i}
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}`}
+                  title={`Video ${i + 1}`}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              );
+            })}
+          </div>
+        )}
       </div>
     </aside>
   );
