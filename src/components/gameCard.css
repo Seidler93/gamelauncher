@@ -1,15 +1,29 @@
 .game-card {
+  --ps2-header-height: 8%;
+
   border: 2px solid black;
   width: 200px;
-  border-radius: 12px;
+  border-radius: 5px;
   overflow: hidden;
   background: #111;
-  aspect-ratio: 3/4;
+  aspect-ratio: 2/3;
   flex-grow: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.game-card img{
+.ps2-cover-header {
   width: 100%;
+  height: var(--ps2-header-height);
+  flex: 0 0 var(--ps2-header-height);
+  object-fit: fill;
+  display: block;
+}
+
+.game-cover {
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
   background: #222;
   object-fit: cover;
   display: block;

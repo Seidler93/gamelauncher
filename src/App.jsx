@@ -8,8 +8,8 @@ import GameDetailsAside from "./components/gameDetailsAside";
 import { sanitizeGameTitle } from "./components/utils/mediaFinder";
 
 export default function App() {
-  const [platformOptions, setPlatformOptions] = useState(["All", "PS2", "PS3", "Steam", "Launchers"]);
-  const [currentlyDisplayed, setCurrentlyDisplayed] = useState('all');
+  const platformOptions = ["All", "PS2", "PS3", "Steam", "Launchers"];
+  const [currentlyDisplayed, setCurrentlyDisplayed] = useState('All');
   const { games, setGames, emulators, gameFolders } = useAppContext();
   const [selectedGame, setSelectedGame] = useState(null);
 
@@ -30,14 +30,36 @@ export default function App() {
     setSelectedGame(game);
   };
 
+  const handleLibraryClick = (event) => {
+    if (selectedGame && event.target === event.currentTarget) {
+      setSelectedGame(null);
+    }
+  };
+
+  const normalizedTab = currentlyDisplayed.toLowerCase();
+  const displayedGames = Array.isArray(games)
+    ? games.filter((game) => {
+        if (normalizedTab === "all") return true;
+
+        const platform = game.platform?.toLowerCase();
+        if (normalizedTab === "launchers") {
+          return ["launcher", "launchers", "custom", "epic", "gog", "battle.net", "ubisoft", "ea"].includes(platform);
+        }
+
+        return platform === normalizedTab;
+      })
+    : [];
+
   return (
-    <div>
+    <div className={`app-shell ${selectedGame ? "details-open" : ""}`}>
       <LibraryNav currentlyDisplayed={currentlyDisplayed} platformOptions={platformOptions} setCurrentlyDisplayed={setCurrentlyDisplayed}/>
-      <div className="library-container">
-        {Array.isArray(games) && games.length > 0 ? (
-          games.map((game) => (
+      <div className="library-container" onClick={handleLibraryClick}>
+        {displayedGames.length > 0 ? (
+          displayedGames.map((game) => (
             <GameCard key={game.id} game={game} handleGameClick={handleGameClick} />
           ))
+        ) : Array.isArray(games) && games.length > 0 ? (
+          <p>No {currentlyDisplayed} games found.</p>
         ) : (
           <p>No games found. <button >Scan for Games</button></p>
         )}

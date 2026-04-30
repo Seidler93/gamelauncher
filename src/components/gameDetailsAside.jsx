@@ -7,12 +7,13 @@ import {
   downloadSaveStateToEmulator,
   scanLocalSavestates
 } from './utils/firebaseHelpers';
-import { getEmulatorPathByPlatform, findSaveStateFile } from './utils/storageManager';
+import { getEmulatorPathByPlatform } from './utils/storageManager';
 import { launchGame } from './utils/launchers';
 
 export default function GameDetailsAside({ game, onClose }) {
   const [savestates, setSavestates] = useState([]);
   const [localSavestates, setLocalSavestates] = useState([]);
+  const [isLoadingCloudSaves, setIsLoadingCloudSaves] = useState(false);
 
   useEffect(() => {
     if (!game) return;
@@ -21,8 +22,15 @@ export default function GameDetailsAside({ game, onClose }) {
       const gameCode = getGameCode(game.title);
 
       // 🌩️ Fetch from Firebase
-      const cloudFiles = await listSavestates("user123", gameCode);
-      setSavestates(cloudFiles);
+      setIsLoadingCloudSaves(true);
+
+      let cloudFiles = [];
+      try {
+        cloudFiles = await listSavestates("user123", gameCode);
+        setSavestates(cloudFiles);
+      } finally {
+        setIsLoadingCloudSaves(false);
+      }
 
       // 💾 Fetch local savestates
       const localFiles = await scanLocalSavestates("H:\\PCSX2\\pcsx2-qt.exe", gameCode);
@@ -35,11 +43,9 @@ export default function GameDetailsAside({ game, onClose }) {
     fetchSavestates();
   }, [game]);
 
-  const handleUpload = async () => {
+  const handleUpload = async (saveStatePath) => {
     if (!game) return;
     const gameCode = getGameCode(game.title);
-    const emulatorPath = await getEmulatorPathByPlatform(game.platform);
-    const saveStatePath = await findSaveStateFile(emulatorPath, gameCode);
 
     try {
       await uploadSaveState("user123", gameCode, saveStatePath);
@@ -76,7 +82,19 @@ export default function GameDetailsAside({ game, onClose }) {
     }
   };
 
+  const handlePlayGame = async () => {
+    try {
+      const emulatorPath = await getEmulatorPathByPlatform(game.platform);
+      await launchGame(emulatorPath, game);
+      console.log("Game launched!");
+    } catch (err) {
+      console.error("Launch failed:", err);
+    }
+  };
+
   if (!game) return null;
+
+  const coverSrc = game.coverUrl || game.coverOptions?.[0]?.imageUrl || '/ps2-game-cover-default.png';
 
   return (
     <aside className="game-details-aside">
@@ -84,7 +102,13 @@ export default function GameDetailsAside({ game, onClose }) {
       <div className="inner">
         <div className="cover-section">
           <img
-            src={game.coverUrl || '/ps2-game-cover-default.png'}
+            src="/ps2-game-cover-default-cropped.png"
+            alt=""
+            aria-hidden="true"
+            className="ps2-detail-header"
+          />
+          <img
+            src={coverSrc}
             alt={game.title}
             className="cover-image"
           />
@@ -92,19 +116,27 @@ export default function GameDetailsAside({ game, onClose }) {
 
         <h2>{sanitizeGameTitle(game.title)}</h2>
 
-        <button className="upload-btn" onClick={handleUpload}>
-          Upload Save State
-        </button>
+        <div className="details-actions">
+          <button className="play-game-btn" onClick={handlePlayGame}>
+            Play Game
+          </button>
+
+        </div>
 
         {/* 🌩️ Cloud Savestates */}
-        <div className="savestates">
+        <div className="savestates cloud-savestates">
           <h4>Cloud Savestates</h4>
-          {savestates.length > 0 ? (
+          {isLoadingCloudSaves ? (
+            <div className="savestate-loading" role="status" aria-live="polite">
+              <span className="loading-logo" aria-hidden="true">2</span>
+              <span>Searching cloud saves...</span>
+            </div>
+          ) : savestates.length > 0 ? (
             <ul>
               {savestates.map((s, i) => (
                 <li key={i}>
                   <span>{s.name}</span>
-                  <button onClick={() => handleDownload(s.url, s.name)}>
+                  <button className="savestate-action" onClick={() => handleDownload(s.url, s.name)}>
                     ⬇ Download
                   </button>
                 </li>
@@ -116,14 +148,17 @@ export default function GameDetailsAside({ game, onClose }) {
         </div>
 
         {/* 💾 Local Savestates */}
-        <div className="savestates">
+        <div className="savestates local-savestates">
           <h4>Local Savestates</h4>
           {localSavestates.length > 0 ? (
             <ul>
               {localSavestates.map((s, i) => (
                 <li key={i}>
                   <span>{s.name}</span>
-                  <button onClick={() => handleLaunch(s.path)}>▶ Launch</button>
+                  <div className="savestate-actions">
+                    <button className="savestate-action" onClick={() => handleUpload(s.path)}>Upload</button>
+                    <button className="savestate-action primary" onClick={() => handleLaunch(s.path)}>▶ Launch</button>
+                  </div>
                 </li>
               ))}
             </ul>
