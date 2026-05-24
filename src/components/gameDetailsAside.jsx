@@ -8,18 +8,39 @@ import {
   scanLocalSavestates
 } from './utils/firebaseHelpers';
 import { getEmulatorPathByPlatform } from './utils/storageManager';
-import { launchGame } from './utils/launchers';
+import { getCoverHeaderLabel, getCoverHeaderSrc } from './utils/coverHeaders';
+import { convertFileSrc } from '@tauri-apps/api/tauri';
+import { useAppContext } from '../context/AppContext';
 
-export default function GameDetailsAside({ game, onClose }) {
+export default function GameDetailsAside({ game, isOpen, onClose }) {
+  const { showToast, isGameBusy, isGameLaunching, isGameRunning, launchTrackedGame } = useAppContext();
+  const [renderedGame, setRenderedGame] = useState(game);
   const [savestates, setSavestates] = useState([]);
   const [localSavestates, setLocalSavestates] = useState([]);
   const [isLoadingCloudSaves, setIsLoadingCloudSaves] = useState(false);
+  const activeGame = game || renderedGame;
+  const isSteamGame = activeGame?.platform?.toLowerCase() === "steam";
+  const isBusy = isGameBusy(activeGame);
+  const launchLabel = isGameLaunching(activeGame) ? "Launching" : isGameRunning(activeGame) ? "Running" : "Play Game";
+  const savestateLaunchLabel = isGameLaunching(activeGame) ? "Launching" : isGameRunning(activeGame) ? "Running" : "▶ Launch";
+
+  useEffect(() => {
+    if (game) setRenderedGame(game);
+  }, [game]);
 
   useEffect(() => {
     if (!game) return;
 
     const fetchSavestates = async () => {
+      if (game.platform?.toLowerCase() === "steam") {
+        setSavestates([]);
+        setLocalSavestates([]);
+        setIsLoadingCloudSaves(false);
+        return;
+      }
+
       const gameCode = getGameCode(game.title);
+      const gameTitle = game.title || game.name || "";
 
       // 🌩️ Fetch from Firebase
       setIsLoadingCloudSaves(true);
@@ -34,7 +55,7 @@ export default function GameDetailsAside({ game, onClose }) {
 
       // 💾 Fetch local savestates
       const localFiles = await scanLocalSavestates("H:\\PCSX2\\pcsx2-qt.exe", gameCode);
-      setLocalSavestates(localFiles);
+      setLocalSavestates(localFiles.filter((saveState) => saveBelongsToGame(saveState, gameCode, gameTitle)));
 
       console.log("✅ Cloud:", cloudFiles);
       console.log("✅ Local:", localFiles);
@@ -45,8 +66,8 @@ export default function GameDetailsAside({ game, onClose }) {
   }, [game]);
 
   const handleUpload = async (saveStatePath) => {
-    if (!game) return;
-    const gameCode = getGameCode(game.title);
+    if (!activeGame) return;
+    const gameCode = getGameCode(activeGame.title);
 
     try {
       await uploadSaveState("user123", gameCode, saveStatePath);
@@ -60,9 +81,8 @@ export default function GameDetailsAside({ game, onClose }) {
   };
 
   const handleDownload = async (url, filename) => {
-    if (!game) return;
-    const gameCode = getGameCode(game.title);
-    const emulatorPath = await getEmulatorPathByPlatform(game.platform);
+    if (!activeGame) return;
+    const emulatorPath = await getEmulatorPathByPlatform(activeGame.platform);
 
     try {
       await downloadSaveStateToEmulator(url, filename, emulatorPath);
@@ -74,22 +94,26 @@ export default function GameDetailsAside({ game, onClose }) {
   };
 
   const handleLaunch = async (savePath) => {
+    if (isBusy) return;
+
     try {
-      const emulatorPath = await getEmulatorPathByPlatform(game.platform);
-      await launchGame(emulatorPath, game, savePath);
+      await launchTrackedGame(activeGame, null, savePath);
       console.log("Game launched with savestate!");
     } catch (err) {
       console.error("Launch failed:", err);
+      showToast("Could not launch that game.", "error");
     }
   };
 
   const handlePlayGame = async () => {
+    if (isBusy) return;
+
     try {
-      const emulatorPath = await getEmulatorPathByPlatform(game.platform);
-      await launchGame(emulatorPath, game);
+      await launchTrackedGame(activeGame);
       console.log("Game launched!");
     } catch (err) {
       console.error("Launch failed:", err);
+      showToast("Could not launch that game.", "error");
     }
   };
 
@@ -98,39 +122,67 @@ export default function GameDetailsAside({ game, onClose }) {
     return date.toLocaleDateString();
   };
 
-  if (!game) return null;
+  if (!activeGame) {
+    return <aside className="game-details-aside" aria-hidden="true" />;
+  }
 
-  const coverSrc = game.coverUrl || game.coverOptions?.[0]?.imageUrl || '/ps2-game-cover-default.png';
+  const coverSrc = activeGame.customCoverPath
+    ? convertFileSrc(activeGame.customCoverPath)
+    : activeGame.coverUrl || activeGame.coverOptions?.[0]?.imageUrl;
+  const coverHeaderSrc = getCoverHeaderSrc(activeGame.platform);
+  const coverHeaderLabel = getCoverHeaderLabel(activeGame.platform);
+  const gameTitle = activeGame.title || activeGame.name;
+  const playStats = activeGame.stats || {};
 
   return (
-    <aside className="game-details-aside">
+    <aside
+      className={`game-details-aside ${isOpen ? "open" : ""}`}
+      aria-hidden={!isOpen}
+      onTransitionEnd={(event) => {
+        if (event.propertyName === "transform" && !isOpen) {
+          setRenderedGame(null);
+        }
+      }}
+    >
       <button className="close-button" onClick={onClose}>✕</button>
       <div className="inner">
         <div className="cover-section">
-          <img
-            src="/ps2-game-cover-default-cropped.png"
-            alt=""
-            aria-hidden="true"
-            className="ps2-detail-header"
-          />
-          <img
-            src={coverSrc}
-            alt={game.title}
-            className="cover-image"
-          />
+          {coverHeaderSrc ? (
+            <img
+              src={coverHeaderSrc}
+              alt=""
+              aria-hidden="true"
+              className="detail-cover-header"
+            />
+          ) : (
+            <div className="detail-cover-header detail-cover-header-fallback">{coverHeaderLabel}</div>
+          )}
+          {coverSrc ? (
+            <img
+              src={coverSrc}
+              alt={gameTitle}
+              className="cover-image"
+            />
+          ) : (
+            <div className="cover-image detail-cover-placeholder">
+              <span>{gameTitle}</span>
+            </div>
+          )}
         </div>
 
         {/* Title */}
-        <h2>{sanitizeGameTitle(game.title)}</h2>
+        <h2>{sanitizeGameTitle(gameTitle)}</h2>
 
         <div className="details-actions">
-          <button className="play-game-btn" onClick={handlePlayGame}>
-            Play Game
+          <button className="play-game-btn" onClick={handlePlayGame} disabled={isBusy}>
+            {launchLabel}
           </button>
 
         </div>
 
         {/* 🌩️ Cloud Savestates */}
+        {!isSteamGame && (
+          <>
         <div className="savestates cloud-savestates">
           <h4>Cloud Savestates</h4>
           {isLoadingCloudSaves ? (
@@ -164,37 +216,53 @@ export default function GameDetailsAside({ game, onClose }) {
                   <span>{s.name}</span>
                   <div className="savestate-actions">
                     <button className="savestate-action" onClick={() => handleUpload(s.path)}>Upload</button>
-                    <button className="savestate-action primary" onClick={() => handleLaunch(s.path)}>▶ Launch</button>
+                    <button className="savestate-action primary" onClick={() => handleLaunch(s.path)} disabled={isBusy}>
+                      {savestateLaunchLabel}
+                    </button>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="no-saves">No local saves found</p>
+            <p className="no-saves">No local saves found for this game</p>
           )}
         </div>
+          </>
+        )}
 
         {/* Summary */}
-        {game.summary && (
-          <p className="summary">{game.summary}</p>
+        {activeGame.summary && (
+          <p className="summary">{activeGame.summary}</p>
         )}
 
         {/* Release Date */}
-        {game.releaseDate && (
-          <p><strong>Release:</strong> {formatDate(game.releaseDate)}</p>
+        {activeGame.releaseDate && (
+          <p><strong>Release:</strong> {formatDate(activeGame.releaseDate)}</p>
         )}
 
+        <div className="play-stats">
+          <h4>Play Stats</h4>
+          <p><strong>Playtime:</strong> {formatPlaytime(playStats.totalSeconds || playStats.totalMin * 60 || 0)}</p>
+          <p><strong>Launches:</strong> {playStats.launches || 0}</p>
+          {playStats.lastPlayed && (
+            <p><strong>Last Played:</strong> {formatDateTime(playStats.lastPlayed)}</p>
+          )}
+          {playStats.lastSessionSeconds > 0 && (
+            <p><strong>Last Session:</strong> {formatPlaytime(playStats.lastSessionSeconds)}</p>
+          )}
+        </div>
+
         {/* Genres */}
-        {game.genres?.length > 0 && (
-          <p><strong>Genres:</strong> {game.genres.join(', ')}</p>
+        {activeGame.genres?.length > 0 && (
+          <p><strong>Genres:</strong> {activeGame.genres.join(', ')}</p>
         )}
 
         {/* Screenshots */}
-        {game.screenshots?.length > 0 && (
+        {activeGame.screenshots?.length > 0 && (
           <div className="screenshots">
             <h4>Screenshots</h4>
             <div className="screenshot-list">
-              {game.screenshots.map((url, i) => (
+              {activeGame.screenshots.map((url, i) => (
                 <img key={i} src={url} alt={`Screenshot ${i + 1}`} className="screenshot" />
               ))}
             </div>
@@ -202,10 +270,10 @@ export default function GameDetailsAside({ game, onClose }) {
         )}
 
         {/* Videos */}
-        {game.videos?.length > 0 && (
+        {activeGame.videos?.length > 0 && (
           <div className="videos">
             <h4>Videos</h4>
-            {game.videos.map((vid, i) => {
+            {activeGame.videos.map((vid, i) => {
               // Extract video ID if it's a full URL
               let videoId = vid;
               const match = vid.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
@@ -227,4 +295,49 @@ export default function GameDetailsAside({ game, onClose }) {
       </div>
     </aside>
   );
+}
+
+function saveBelongsToGame(saveState, gameCode, gameTitle) {
+  const saveText = normalizeSaveText(`${saveState?.name || ""} ${saveState?.path || ""}`);
+  const code = normalizeSaveText(gameCode);
+  const title = normalizeSaveText(gameTitle);
+
+  if (code.length >= 3 && saveText.includes(code)) return true;
+  if (title.length >= 3 && saveText.includes(title)) return true;
+
+  const titleWords = title
+    .split(" ")
+    .filter((word) => word.length >= 3);
+
+  return titleWords.length >= 2 && titleWords.every((word) => saveText.includes(word));
+}
+
+function normalizeSaveText(value = "") {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function formatPlaytime(totalSeconds = 0) {
+  const seconds = Math.max(0, Number(totalSeconds) || 0);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m`;
+  return "0m";
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown";
+
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }

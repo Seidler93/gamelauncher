@@ -1,7 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize};
-use tauri::api::process::Command;
+use std::process::{Command, Stdio};
+use std::thread;
 use tauri::Manager;
 
 // ========== Process Launcher ==========
@@ -10,42 +11,70 @@ use tauri::Manager;
 struct LaunchSpec {
     exe: String,
     args: Vec<String>,
-    cwd: String,
+    cwd: Option<String>,
+}
+
+#[derive(Clone, Serialize)]
+struct ProcessExitPayload {
+    pid: u32,
+    code: Option<i32>,
 }
 
 #[tauri::command]
-async fn launch_process(spec: LaunchSpec) -> Result<(), String> {
-    Command::new(spec.exe)
-        .args(spec.args)
-        .current_dir(spec.cwd.into())
+fn launch_process(app: tauri::AppHandle, spec: LaunchSpec) -> Result<u32, String> {
+    println!(
+        "[launch_process] exe='{}' args={:?} cwd={:?}",
+        spec.exe, spec.args, spec.cwd
+    );
+
+    let mut command = Command::new(&spec.exe);
+    command
+        .args(&spec.args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+
+    if let Some(dir) = &spec.cwd {
+        command.current_dir(dir);
+    }
+
+    let mut child = command
         .spawn()
-        .map_err(|e| e.to_string())?;
-    Ok(())
+        .map_err(|e| format!("Failed to launch '{}': {}", &spec.exe, e))?;
+    let pid = child.id();
+    let app_handle = app.clone();
+
+    thread::spawn(move || {
+        let code = child.wait().ok().and_then(|status| status.code());
+        let _ = app_handle.emit_all("game-process-exited", ProcessExitPayload { pid, code });
+    });
+
+    Ok(pid)
 }
 
 // ========== IGDB Game Metadata ==========
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct Cover {
     image_id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct Screenshot {
     image_id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct Video {
     video_id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct Genre {
     name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameMetadata {
     id: u64,
     name: String,
@@ -103,11 +132,16 @@ async fn fetch_game_metadata(
 
     // Filter exact match if available
     let exact_matches: Vec<GameMetadata> = games
-        .into_iter()
+        .iter()
         .filter(|g| g.name.eq_ignore_ascii_case(&game_name))
+        .cloned()
         .collect();
 
-    Ok(exact_matches)
+    if exact_matches.is_empty() {
+        Ok(games)
+    } else {
+        Ok(exact_matches)
+    }
 }
 
 // ========== Main App ==========

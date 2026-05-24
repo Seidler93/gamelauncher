@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #111;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,12 +19,65 @@ body {
   height: 100%;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
+  background: #111;
+}
+
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 #root,
 .app-shell {
   width: 100%;
   min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 24%, rgba(120, 124, 136, 0.22), transparent 24%),
+    radial-gradient(circle at 78% 18%, rgba(78, 82, 92, 0.2), transparent 26%),
+    linear-gradient(135deg, #101012 0%, #1a1b20 46%, #111 100%);
+  background-attachment: fixed;
+}
+
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  overflow: hidden;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(155, 160, 172, 0.2) 39%, transparent 42%),
+    linear-gradient(65deg, transparent 0 56%, rgba(105, 110, 122, 0.15) 57%, transparent 60%);
+  animation: ps2-menu-drift 10s ease-in-out infinite alternate;
+}
+
+.platform-theme-ps2::before {
+  content: none;
+}
+
+.library-nav,
+.library-container,
+.settings-page,
+.game-details-aside,
+.app-toast-stack,
+.modal-overlay {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes ps2-menu-drift {
+  from {
+    transform: translateX(-4%) skewX(-8deg);
+  }
+  to {
+    transform: translateX(4%) skewX(-8deg);
+  }
 }
 
 h1 {
@@ -32,19 +85,153 @@ h1 {
   line-height: 1.1;
 }
 
+select {
+  cursor: pointer;
+  min-height: 34px;
+  box-sizing: border-box;
+  border: 1px solid #33343a;
+  border-radius: 4px;
+  background-color: #202024;
+  color: #f3f4f6;
+  padding: 0 30px 0 10px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  outline: none;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #cbd5e1 50%),
+    linear-gradient(135deg, #cbd5e1 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 50%,
+    calc(100% - 10px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+select:hover {
+  border-color: #4a4b52;
+  background-color: #242429;
+}
+
+select:focus-visible {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.25);
+}
+
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+select option {
+  background: #18181b;
+  color: #f3f4f6;
+}
+
 .library-container {
   display: flex;
   flex-wrap: wrap;
-  width: 100vw;
-  height: 100vh;
-  border: 2px solid black;
+  width: 100%;
+  height: 100%;
   margin: 0;
   box-sizing: border-box;
-  padding: 65px 25px;
-  gap: 5px 15px;
+  padding: 75px 25px;
+  gap: var(--library-row-gap, 5px) var(--library-column-gap, 15px);
   align-items: start;
-  transition: padding-right 180ms ease;
+  transition: padding-right 240ms ease;
   /* items */
+}
+
+.platform-theme-ps2 {
+  min-height: 100vh;
+  background: #02040b;
+  overflow-x: hidden;
+}
+
+.platform-theme-ps3 {
+  min-height: 100vh;
+  background: #052846;
+  overflow-x: hidden;
+}
+
+.platform-theme-ps2 .library-container {
+  position: relative;
+  z-index: 1;
+}
+
+
+.empty-library {
+  width: min(460px, calc(100vw - 50px));
+  margin: 12vh auto 0;
+  padding: 24px;
+  border: 1px solid #33343a;
+  border-radius: 8px;
+  background: #17171a;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+  text-align: left;
+}
+
+.empty-library h2 {
+  margin: 0 0 8px;
+  color: #f5f5f5;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.empty-library p {
+  margin: 0 0 18px;
+  color: #b8b8bf;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.empty-library button {
+  cursor: pointer;
+  padding: 10px 14px;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 800;
+}
+
+.empty-library button:hover {
+  background: #1d4ed8;
+  border-color: #60a5fa;
+}
+
+.empty-library button:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.library-genre-group {
+  display: block;
+  width: 100%;
+  margin: 0 0 20px;
+  text-align: left;
+}
+
+.library-genre-group h2 {
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #33343a;
+  color: #f5f5f5;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.library-genre-games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--library-row-gap, 5px) var(--library-column-gap, 15px);
 }
 
 .app-shell.details-open .library-container {
@@ -55,4 +242,70 @@ h1 {
   .app-shell.details-open .library-container {
     padding-right: 25px;
   }
+}
+
+.app-toast-stack {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(360px, calc(100vw - 36px));
+  pointer-events: none;
+}
+
+.app-toast-stack.top-right {
+  right: 68px;
+  top: 18px;
+}
+
+.app-toast-stack.bottom-right {
+  right: 18px;
+  bottom: 18px;
+}
+
+.app-toast-stack.bottom-middle {
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+}
+
+.app-toast-stack.bottom-left {
+  left: 18px;
+  bottom: 18px;
+}
+
+.app-toast {
+  padding: 12px 14px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #171717;
+  color: #f2f2f2;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.38);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.app-toast.success {
+  border-color: #3d7c4b;
+  background: #17331d;
+  color: #d7f8dd;
+}
+
+.app-toast.info {
+  border-color: #3b82f6;
+  background: #14233f;
+  color: #dceaff;
+}
+
+.app-toast.error {
+  border-color: #9f3a3a;
+  background: #3b1717;
+  color: #ffdada;
+}
+
+.app-toast.warning {
+  border-color: #b7791f;
+  background: #3a2608;
+  color: #ffe8b6;
 }

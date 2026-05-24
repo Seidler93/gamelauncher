@@ -19,11 +19,13 @@ export const readData = async () => {
     if (!Array.isArray(data.emulators)) data.emulators = [];
     if (!Array.isArray(data.games)) data.games = [];
     if (!Array.isArray(data.gameFolders)) data.gameFolders = [];
+    if (!data.settings || typeof data.settings !== "object") data.settings = {};
+    if (!data.settings.notificationPosition) data.settings.notificationPosition = "top-right";
 
     return data;
-  } catch (err) {
+  } catch {
     // File might not exist — create it with default structure
-    const defaultData = { emulators: [], games: [], gameFolders: [] };
+    const defaultData = { emulators: [], games: [], gameFolders: [], settings: { notificationPosition: "top-right" } };
     try {
       await ensureFolderExists();
       const filePath = await getFilePath();
@@ -63,6 +65,33 @@ export const addGameFolderPath = async (path) => {
   }
 };
 
+export const removeGameFolderPath = async (path) => {
+  const data = await readData();
+  data.gameFolders = data.gameFolders.filter((folder) => folder !== path);
+  const originalGameCount = data.games.length;
+  data.games = data.games.filter((game) => !isPathInsideFolder(game.romPath, path));
+  await writeData(data);
+  return {
+    gameFolders: data.gameFolders,
+    games: data.games,
+    removedGameCount: originalGameCount - data.games.length,
+  };
+};
+
+function isPathInsideFolder(path, folder) {
+  const normalizedPath = normalizePath(path);
+  const normalizedFolder = normalizePath(folder);
+
+  return normalizedPath === normalizedFolder || normalizedPath.startsWith(`${normalizedFolder}/`);
+}
+
+function normalizePath(path = "") {
+  return path
+    .replace(/\\/g, "/")
+    .replace(/\/+$/g, "")
+    .toLowerCase();
+}
+
 export const addEmulator = async (emulator) => {
   const data = await readData();
   data.emulators = mergeOrReplace(data.emulators, [emulator]);
@@ -77,17 +106,28 @@ export const updateGame = async (updatedGame) => {
 
 export const updateEmulator = async (updatedEmulator) => {
   const data = await readData();
-  data.emulators = data.emulators.map((e) => (e.id === updatedEmulator.id ? { ...e, ...updatedEmulator } : e));
+  data.emulators = data.emulators.map((e) => (
+    getEmulatorKey(e) === getEmulatorKey(updatedEmulator) ? { ...e, ...updatedEmulator } : e
+  ));
   await writeData(data);
 };
+
+function getEmulatorKey(emulator) {
+  return emulator.id || emulator.path || `${emulator.platform || ""}:${emulator.name || ""}`;
+}
 
 export const getEmulatorPathByPlatform = async (platform) => {
   const data = await readData();
 
-  const emulator = data.emulators.find((e) => e.platform === platform);
+  const emulator = data.emulators.find((e) => e.platform?.toLowerCase() === platform?.toLowerCase());
 
   // Return the path if found, else null
   return emulator ? emulator.path : null;
+};
+
+export const getEmulatorByPlatform = async (platform) => {
+  const data = await readData();
+  return data.emulators.find((e) => e.platform?.toLowerCase() === platform?.toLowerCase()) || null;
 };
 
 export const findSaveStateFile = async (emulatorPath, gameCode) => {

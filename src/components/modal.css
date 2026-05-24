@@ -17,9 +17,18 @@
   padding: 24px;
   border-radius: 12px;
   min-width: 300px;
+  width: min(560px, 90vw);
   max-width: 90vw;
+  max-height: 88vh;
+  overflow-y: auto;
   position: relative;
   z-index: 1001;
+}
+
+.modal-title {
+  margin: 0 2rem 1rem 0;
+  font-size: 1.1rem;
+  line-height: 1.2;
 }
 
 .modal-close {
@@ -33,15 +42,155 @@
   cursor: pointer;
 }
 
-.emulator-select {
+.emulator-select,
+.file-select {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   margin-bottom: 1rem;
+  text-align: left;
 }
 
-select {
+.emulator-select label,
+.file-select label {
+  color: #d8d8d8;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.file-select input {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.emulator-select select {
+  width: 100%;
+}
+
+.file-select-row {
+  display: flex;
+  gap: 8px;
+}
+
+.file-select-row input {
+  min-width: 0;
+  flex: 1 1 auto;
+  color: #f5f5f5;
+  background: #111;
+  border-color: #444;
+}
+
+.file-select-row button,
+.modal-submit {
+  cursor: pointer;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #262626;
+  color: #fff;
+  font-weight: 700;
+}
+
+.file-select-row button {
+  flex: 0 0 auto;
+  padding: 0 12px;
+}
+
+.modal-submit {
+  width: 100%;
+  padding: 10px 12px;
+  background: #2563eb;
+  border-color: #3b82f6;
+}
+
+.file-select-row button:hover {
+  background: #333;
+  border-color: #666;
+}
+
+.modal-submit:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #60a5fa;
+}
+
+.modal-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.modal-toast {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #171717;
+  color: #e8e8e8;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.modal-toast.success {
+  border-color: #3d7c4b;
+  background: #17331d;
+  color: #d7f8dd;
+}
+
+.modal-toast.info {
+  border-color: #3b82f6;
+  background: #14233f;
+  color: #dceaff;
+}
+
+.modal-toast.error {
+  border-color: #9f3a3a;
+  background: #3b1717;
+  color: #ffdada;
+}
+
+.profile-options {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 1rem;
+  padding: 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.profile-options legend {
+  padding: 0 6px;
+  color: #d8d8d8;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.profile-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f0f0f0;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.profile-checkbox input {
+  width: 16px;
+  height: 16px;
+}
+
+.profile-field {
+  display: grid;
+  gap: 5px;
+}
+
+.profile-field span {
+  color: #d8d8d8;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.profile-field select {
+  width: 100%;
 }

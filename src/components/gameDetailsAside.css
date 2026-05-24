@@ -11,6 +11,18 @@
   overscroll-behavior: contain;
   box-shadow: -4px 0 10px rgba(0, 0, 0, 0.4);
   z-index: 1000;
+  box-sizing: border-box;
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 240ms ease, opacity 180ms ease;
+  will-change: transform;
+}
+
+.game-details-aside.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .inner {
@@ -47,6 +59,31 @@
   line-height: 1.5;
 }
 
+.play-stats {
+  display: grid;
+  gap: 6px;
+  margin: 1rem 0;
+  padding: 10px;
+  border: 1px solid #2d2d2d;
+  border-radius: 6px;
+  background: #171717;
+}
+
+.play-stats h4,
+.play-stats p {
+  margin: 0;
+}
+
+.play-stats h4 {
+  color: #f5f5f5;
+  font-size: 0.9rem;
+}
+
+.play-stats p {
+  color: #d8d8d8;
+  font-size: 0.85rem;
+}
+
 .screenshots {
   margin-top: 1rem;
 }
@@ -80,12 +117,23 @@
   background: #222;
 }
 
-.ps2-detail-header {
+.detail-cover-header {
   width: 100%;
   height: var(--ps2-detail-header-height);
   flex: 0 0 var(--ps2-detail-header-height);
   object-fit: fill;
   display: block;
+}
+
+.detail-cover-header-fallback {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: #101010;
+  color: #f2f2f2;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .cover-image {
@@ -94,6 +142,34 @@
   flex: 1 1 auto;
   object-fit: cover;
   display: block;
+}
+
+.detail-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background:
+    linear-gradient(145deg, rgba(37, 99, 235, 0.18), transparent 42%),
+    linear-gradient(315deg, rgba(22, 163, 74, 0.18), transparent 45%),
+    #181a1f;
+  color: #f8fafc;
+  text-align: center;
+}
+
+.detail-cover-placeholder span {
+  display: -webkit-box;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .videos iframe {
@@ -130,6 +206,13 @@
 .play-game-btn:hover {
   background: #1d4ed8;
   border-color: #60a5fa;
+}
+
+.play-game-btn:disabled {
+  cursor: default;
+  background: #1f2937;
+  border-color: #374151;
+  color: #cbd5e1;
 }
 
 .savestates {
@@ -212,6 +295,14 @@
 .savestate-action.primary:hover {
   background: #397448;
   border-color: #4a9a5e;
+}
+
+.savestate-action:disabled,
+.savestate-action.primary:disabled {
+  cursor: default;
+  background: #262626;
+  border-color: #444;
+  color: #9ca3af;
 }
 
 .no-saves {

@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Local reference/scratch downloads
+Playstation2Intro-master/
+ps2bios-master/
+xmb-on-web-main/
+
+# Tauri build output
+src-tauri/target/

@@ -2,7 +2,7 @@
   --ps2-header-height: 8%;
 
   border: 2px solid black;
-  width: 200px;
+  width: var(--game-card-width, 200px);
   border-radius: 5px;
   overflow: hidden;
   background: #111;
@@ -12,12 +12,35 @@
   flex-direction: column;
 }
 
-.ps2-cover-header {
+.game-card.orientation-square {
+  aspect-ratio: 1;
+}
+
+.game-card.orientation-landscape {
+  aspect-ratio: 16/9;
+}
+
+.game-card.with-title {
+  aspect-ratio: auto;
+}
+
+.game-cover-header {
   width: 100%;
   height: var(--ps2-header-height);
   flex: 0 0 var(--ps2-header-height);
   object-fit: fill;
   display: block;
+}
+
+.game-cover-header-fallback {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  background: #101010;
+  color: #f2f2f2;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .game-cover {
@@ -29,6 +52,54 @@
   display: block;
 }
 
+.game-card.with-title .game-cover {
+  aspect-ratio: inherit;
+  flex: 0 0 auto;
+}
+
+.game-card-title {
+  padding: 7px 8px 8px;
+  color: #f3f4f6;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.18;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-cover-placeholder {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  padding: 14px;
+  background:
+    linear-gradient(145deg, rgba(37, 99, 235, 0.12), transparent 48%),
+    linear-gradient(315deg, rgba(22, 163, 74, 0.12), transparent 48%),
+    #181a1f;
+  color: #f8fafc;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.game-cover-placeholder span {
+  display: -webkit-box;
+  width: 100%;
+  max-width: 168px;
+  margin: 0 auto;
+  overflow: hidden;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
 .game-card:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
@@ -36,7 +107,9 @@
   cursor: pointer ;
 }
 
+.game-context-menu,
 .context-menu {
+  position: fixed;
   background: #222;
   color: #fff;
   border: 1px solid #444;
@@ -45,14 +118,30 @@
   padding: 5px 0;
   border-radius: 6px;
   min-width: 160px;
-  z-index: 100;
+  z-index: 20000;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
 }
 
+.game-context-menu li,
 .context-menu li {
   padding: 8px 12px;
   cursor: pointer;
+  font-size: 0.86rem;
+  white-space: nowrap;
 }
 
+.game-context-menu li:hover,
 .context-menu li:hover {
   background: #333;
+}
+
+.game-context-menu li.disabled,
+.context-menu li.disabled {
+  cursor: default;
+  color: #9ca3af;
+}
+
+.game-context-menu li.disabled:hover,
+.context-menu li.disabled:hover {
+  background: transparent;
 }
