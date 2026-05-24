@@ -8,11 +8,19 @@
   },
   "package": {
     "productName": "Game Launcher",
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "tauri": {
     "bundle": {
+      "active": true,
       "identifier": "com.example.gamelauncher",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
       "targets": [
         "nsis"
       ]
